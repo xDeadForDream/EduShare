@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}{{ doc.title }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <!-- Карточка документа -->
+        <div class="card mb-4 border-0 shadow-lg fade-in-up">
+            <div class="card-body p-5">
+                <h2 class="fw-bold mb-3 text-dark">{{ doc.title }}</h2>
+                
+                <div class="d-flex align-items-center text-muted mb-4 small flex-wrap gap-3">
+                    <span><i class="bi bi-person me-1"></i> {{ doc.author.username }}</span>
+                    <span><i class="bi bi-clock me-1"></i> {{ doc.upload_date.strftime('%d.%m.%Y в %H:%M') }}</span>
+                    <span><i class="bi bi-folder me-1"></i> {{ doc.subject }}</span>
+                    <span><i class="bi bi-download me-1"></i> {{ doc.downloads }} скачиваний</span>
+                </div>
+                
+                <hr class="my-4 opacity-25">
+                
+                <!-- ПРЕДПРОСМОТР ФАЙЛА -->
+                <div class="mb-4 text-center bg-light rounded-3 p-4 border border-white border-opacity-50">
+                    {% set ext = doc.filename.rsplit('.', 1)[1].lower() if '.' in doc.filename else '' %}
+                    
+                    {% if ext in ['png', 'jpg', 'jpeg', 'gif', 'webp'] %}
+                        <!-- Если картинка - показываем её -->
+                        <img src="{{ url_for('main.uploaded_file', filename=doc.filename) }}" 
+                             alt="{{ doc.title }}" 
+                             class="img-fluid rounded-3 shadow-sm" 
+                             style="max-height: 500px; object-fit: contain;">
+                    {% elif ext == 'pdf' %}
+                        <!-- Если PDF - иконка и кнопка -->
+                        <i class="bi bi-file-pdf-fill text-danger fs-1 d-block mb-2"></i>
+                        <p class="text-muted">Документ PDF</p>
+                    {% else %}
+                        <!-- Другие файлы -->
+                        <i class="bi bi-file-earmark-fill text-primary fs-1 d-block mb-2"></i>
+                        <p class="text-muted">Файл: {{ doc.filename }}</p>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('main.download_file', filename=doc.filename) }}" class="btn btn-success rounded-pill px-4 mt-3 shadow-sm">
+                        <i class="bi bi-download me-2"></i>Скачать файл
+                    </a>
+                </div>
+
+                <p class="lead text-secondary">{{ doc.description or 'Описание отсутствует' }}</p>
+                
+                <div class="mt-4">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                        <i class="bi bi-arrow-left me-1"></i> Назад к списку
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция ЧАТА С КАРТИНКАМИ -->
+        <div class="card border-0 shadow-lg fade-in-up delay-1">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 ps-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold"><i class="bi bi-chat-dots me-2 text-primary"></i>Обсуждение</h5>
+                <div class="pe-4">
+                    <button id="like-btn" data-doc-id="{{ doc.id }}" class="btn btn-outline-danger rounded-pill px-3 {% if doc.is_liked_by(current_user) %}active bg-danger text-white{% endif %}">
+                        <i class="bi bi-heart-fill me-1"></i> <span id="like-count">{{ doc.get_likes_count() }}</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card-body p-4">
+                <div class="chat-container mb-4" style="max-height: 500px; overflow-y: auto;">
+                    {% for comment in comments %}
+                    <div class="d-flex mb-3 {% if comment.author == current_user %}flex-row-reverse{% endif %}">
+                        <div class="flex-shrink-0 mx-2">
+                            <div class="avatar-circle shadow-sm">
+                                {% if comment.author.username %}{{ comment.author.username[0]|upper }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="{% if comment.author == current_user %}text-end{% endif %}" style="max-width: 80%;">
+                            <div class="d-inline-block p-3 rounded-3 {% if comment.author == current_user %}bg-primary text-white{% else %}bg-light{% endif %} shadow-sm text-start">
+                                <div class="small opacity-75 mb-1 fw-bold">{{ comment.author.username }}</div>
+                                
+                                <!-- Текст комментария -->
+                                {% if comment.text %}
+                                    <p class="mb-2">{{ comment.text }}</p>
+                                {% endif %}
+                                
+                                <!-- Картинка комментария -->
+                                {% if comment.image_filename %}
+                                    <img src="{{ url_for('main.uploaded_file', filename=comment.image_filename) }}" 
+                                         class="img-fluid rounded-2 mt-1 border border-white border-opacity-25" 
+                                         style="max-width: 250px; cursor: pointer;" 
+                                         data-bs-toggle="modal" 
+                                         data-bs-target="#imagePreviewModal"
+                                         onclick="previewImage(this.src)">
+                                {% endif %}
+                            </div>
+                            <div class="text-muted small mt-1 mx-1">{{ comment.timestamp.strftime('%H:%M') }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-chat-square-text fs-1 d-block mb-2 opacity-25"></i>
+                        Начните обсуждение первым!
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Форма ввода с кнопкой картинки -->
+                <form method="POST" enctype="multipart/form-data" class="mt-auto">
+                    <div class="card bg-light border-0 mb-2">
+                        <div class="card-body p-2">
+                            <textarea name="comment_text" id="comment-text" class="form-control border-0 bg-transparent" rows="2" placeholder="Напишите сообщение..." style="resize: none;"></textarea>
+                            
+                            <!-- Предпросмотр выбранной картинки -->
+                            <div id="image-preview-container" class="mt-2 d-none">
+                                <div class="position-relative d-inline-block">
+                                    <img id="image-preview" src="#" class="img-thumbnail" style="max-height: 100px;">
+                                    <button type="button" class="btn-close position-absolute top-0 start-100 translate-middle m-1" onclick="clearImagePreview()"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <label for="comment-image" class="btn btn-outline-secondary btn-sm rounded-circle me-2" title="Прикрепить фото">
+                                <i class="bi bi-camera"></i>
+                            </label>
+                            <input type="file" id="comment-image" name="comment_image" class="d-none" accept="image/*" onchange="showImagePreview(this)">
+                        </div>
+                        <button class="btn btn-primary px-4 rounded-pill" type="submit">
+                            <i class="bi bi-send-fill me-1"></i> Отправить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для просмотра картинки на весь экран -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body p-0 text-center">
+                <img id="full-image-preview" src="" class="img-fluid rounded-3 shadow-lg">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Предпросмотр картинки перед отправкой
+function showImagePreview(input) {
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImg = document.getElementById('image-preview');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewContainer.classList.remove('d-none');
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function clearImagePreview() {
+    const input = document.getElementById('comment-image');
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImg = document.getElementById('image-preview');
+    
+    input.value = '';
+    previewImg.src = '#';
+    previewContainer.classList.add('d-none');
+}
+
+// Просмотр картинки на весь экран
+function previewImage(src) {
+    document.getElementById('full-image-preview').src = src;
+}
+
+// Логика лайков (без изменений)
+document.addEventListener('DOMContentLoaded', function() {
+    const likeBtn = document.getElementById('like-btn');
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function() {
+            const docId = this.getAttribute('data-doc-id');
+            this.disabled = true;
+            fetch(`/like/${docId}`, { method: 'POST', headers: {'Content-Type': 'application/json'} })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('like-count').innerText = data.likes;
+                if (data.liked) {
+                    this.classList.add('active', 'bg-danger', 'text-white');
+                    this.classList.remove('btn-outline-danger');
+                } else {
+                    this.classList.remove('active', 'bg-danger', 'text-white');
+                    this.classList.add('btn-outline-danger');
+                }
+                this.disabled = false;
+            })
+            .catch(() => { this.disabled = false; });
+        });
+    }
+});
+</script>
+{% endblock %}

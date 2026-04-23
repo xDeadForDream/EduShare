@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Загрузка{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">Загрузка материала</div>
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Название работы</label>
+                        <input type="text" name="title" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Предмет / Категория</label>
+                        <select name="subject" class="form-select">
+                            <option value="Общее">Общее</option>
+                            <option value="Математика">Математика</option>
+                            <option value="Информатика">Информатика</option>
+                            <option value="Физика">Физика</option>
+                            <option value="История">История</option>
+                            <option value="Литература">Литература</option>
+                            <option value="Английский язык">Английский язык</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea name="description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Файл</label>
+                        <input type="file" name="file" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Загрузить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

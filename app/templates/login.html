@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold text-primary">С возвращением!</h2>
+                    <p class="text-muted">Введите данные для входа в EduShare</p>
+                </div>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label small text-uppercase fw-bold text-muted">Логин</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-person"></i></span>
+                            <input type="text" name="username" class="form-control border-start-0 ps-0" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small text-uppercase fw-bold text-muted">Пароль</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock"></i></span>
+                            <input type="password" name="password" class="form-control border-start-0 ps-0" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">Войти в систему</button>
+                </form>
+                <div class="text-center mt-4">
+                    <small class="text-muted">Еще нет аккаунта? <a href="{{ url_for('auth.register') }}" class="text-decoration-none fw-bold">Создать</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

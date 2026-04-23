@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduShare - {% block title %}{% endblock %}</title>
+    
+    <!-- Шрифт -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Иконки -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #a855f7;
+            --accent-color: #ec4899;
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            transition: background 0.5s ease;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body::before {
+            content: ''; position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%; z-index: -1; filter: blur(40px); animation: floatBlob 10s infinite alternate;
+        }
+        body::after {
+            content: ''; position: fixed; bottom: -10%; right: -10%; width: 60vw; height: 60vw;
+            background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%; z-index: -1; filter: blur(50px); animation: floatBlob 12s infinite alternate-reverse;
+        }
+        @keyframes floatBlob { from { transform: translate(0, 0); } to { transform: translate(30px, 30px); } }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); padding: 0.8rem 0;
+        }
+        .navbar-brand {
+            font-weight: 800; font-size: 1.5rem;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px;
+        }
+        .nav-link { font-weight: 500; color: var(--text-dark) !important; transition: color 0.2s; }
+        .nav-link:hover { color: var(--primary-color) !important; }
+
+        .card {
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 45px 0 rgba(31, 38, 135, 0.15); border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none; border-radius: 12px; padding: 10px 24px; font-weight: 600;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        }
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color); color: var(--primary-color);
+            border-radius: 12px; font-weight: 600;
+        }
+        .btn-outline-primary:hover {
+            background: var(--primary-color); color: white; transform: translateY(-2px);
+        }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 12px; padding: 12px 16px; font-size: 0.95rem; backdrop-filter: blur(4px); transition: all 0.3s;
+        }
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.9); border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15); outline: none;
+        }
+
+        /* Стили аватарки */
+        .avatar-circle {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background-size: cover; background-position: center;
+            overflow: hidden;
+        }
+        .avatar-circle img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        .quote-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+            border-left: 5px solid var(--accent-color); backdrop-filter: blur(10px);
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0; transform: translateY(20px);
+        }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } .delay-3 { animation-delay: 0.3s; }
+
+        footer { background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); margin-top: auto; }
+
+        .color-option {
+            width: 45px; height: 45px; border-radius: 50%; cursor: pointer;
+            border: 3px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .color-option:hover { transform: scale(1.15); box-shadow: 0 6px 12px rgba(0,0,0,0.2); z-index: 10; }
+        
+        .avatar-option {
+            width: 60px; height: 60px; border-radius: 50%; cursor: pointer;
+            border: 3px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: white; font-weight: bold; overflow: hidden;
+        }
+        .avatar-option:hover { transform: scale(1.1); }
+        .avatar-option img { width: 100%; height: 100%; object-fit: cover; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="bi bi-mortarboard-fill me-2"></i>EduShare
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if current_user.is_authenticated %}
+                        <!-- Кнопка настройки фона -->
+                        <li class="nav-item me-2">
+                            <button class="btn btn-light btn-sm rounded-circle shadow-sm d-flex align-items-center justify-content-center" 
+                                    style="width: 40px; height: 40px;"
+                                    data-bs-toggle="modal" data-bs-target="#bgSettingsModal" title="Фон">
+                                <i class="bi bi-palette-fill text-primary"></i>
+                            </button>
+                        </li>
+                        
+                        <li class="nav-item me-3">
+                            <a class="btn btn-primary btn-sm shadow-sm" href="{{ url_for('main.upload') }}">
+                                <i class="bi bi-cloud-upload me-1"></i> Загрузить
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <!-- Динамическая аватарка -->
+                                <div id="nav-avatar" class="avatar-circle me-2" style="width: 32px; height: 32px; font-size: 0.9rem;">
+                                    {{ current_user.username[0]|upper }}
+                                </div>
+                                <span class="fw-bold">{{ current_user.username }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2">
+                                <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#avatarSettingsModal">
+                                    <i class="bi bi-person-badge me-2 text-primary"></i>Сменить аватар
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2" href="{{ url_for('auth.logout') }}">
+                                    <i class="bi bi-box-arrow-right me-2 text-danger"></i>Выйти
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link fw-medium" href="{{ url_for('auth.login') }}">Войти</a></li>
+                        <li class="nav-item ms-2">
+                            <a class="btn btn-outline-primary btn-sm fw-bold" href="{{ url_for('auth.register') }}">Регистрация</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5 mb-5 flex-grow-1">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} border-0 shadow-lg rounded-4 alert-dismissible fade show fade-in-up" role="alert" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);">
+                        <div class="d-flex align-items-center">
+                            {% if category == 'success' %}<i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>{% endif %}
+                            {% if category == 'danger' %}<i class="bi bi-exclamation-triangle-fill text-danger fs-5 me-2"></i>{% endif %}
+                            {% if category == 'info' %}<i class="bi bi-info-circle-fill text-info fs-5 me-2"></i>{% endif %}
+                            <span class="fw-medium">{{ message }}</span>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="text-center py-4 text-white-50 small">
+        <p class="mb-0">&copy; 2026 EduShare Project. Designed with ❤️ for Web Development.</p>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- МОДАЛКА НАСТРОЙКИ ФОНА -->
+    <div class="modal fade" id="bgSettingsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.95);">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-palette me-2 text-primary"></i>Оформление фона</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <p class="small text-uppercase text-muted fw-bold mb-3">Градиенты</p>
+                    <div class="d-flex gap-3 flex-wrap mb-4 justify-content-center" id="gradient-options"></div>
+                    <hr class="my-4 opacity-25">
+                    <p class="small text-uppercase text-muted fw-bold mb-3">Своё изображение</p>
+                    <div class="input-group mb-3">
+                        <input type="file" class="form-control" id="custom-bg-input" accept="image/*">
+                        <button class="btn btn-outline-primary" type="button" onclick="applyCustomBg()">Применить</button>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-4" onclick="resetBg()">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Сбросить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА НАСТРОЙКИ АВАТАРКИ -->
+    <div class="modal fade" id="avatarSettingsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.95);">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-badge me-2 text-primary"></i>Выберите аватар</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-3 text-center">
+                    <p class="small text-uppercase text-muted fw-bold mb-3">Готовые цвета</p>
+                    <div class="d-flex gap-3 flex-wrap mb-4 justify-content-center" id="avatar-color-options"></div>
+                    
+                    <hr class="my-4 opacity-25">
+                    
+                    <p class="small text-uppercase text-muted fw-bold mb-3">Загрузить фото</p>
+                    <div class="input-group mb-3">
+                        <input type="file" class="form-control" id="custom-avatar-input" accept="image/*">
+                        <button class="btn btn-outline-primary" type="button" onclick="applyCustomAvatar()">Применить</button>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-4" onclick="resetAvatar()">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Сбросить (Инициалы)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === ЛОГИКА ФОНА ===
+        const gradients = [
+            'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab)',
+            'linear-gradient(-45deg, #ff9a9e, #fad0c4, #fad0c4)',
+            'linear-gradient(-45deg, #a18cd1, #fbc2eb)',
+            'linear-gradient(-45deg, #84fab0, #8fd3f4)',
+            'linear-gradient(-45deg, #fccb90, #d57eeb)',
+            'linear-gradient(-45deg, #e0c3fc, #8ec5fc)',
+            'linear-gradient(-45deg, #43e97b, #38f9d7)',
+            'linear-gradient(-45deg, #fa709a, #fee140)',
+            'linear-gradient(to right, #4facfe, #00f2fe)',
+            'linear-gradient(to top, #30cfd0, #330867)',
+            'linear-gradient(to top, #09203f, #537895)',
+            'linear-gradient(to top, #cc2b5e, #753a88)'
+        ];
+
+                // === ЛОГИКА АВАТАРОК ===
+        const avatarColors = [
+            'linear-gradient(135deg, #6366f1, #ec4899)',
+            'linear-gradient(135deg, #FF9A9E, #FECFEF)',
+            'linear-gradient(135deg, #a18cd1, #fbc2eb)',
+            'linear-gradient(135deg, #84fab0, #8fd3f4)',
+            'linear-gradient(135deg, #fccb90, #d57eeb)',
+            'linear-gradient(135deg, #e0c3fc, #8ec5fc)',
+            'linear-gradient(135deg, #43e97b, #38f9d7)',
+            'linear-gradient(135deg, #fa709a, #fee140)',
+            'linear-gradient(135deg, #30cfd0, #330867)',
+            'linear-gradient(135deg, #667eea, #764ba2)'
+        ];
+
+        // Получаем инициалы безопасно
+        let userInitial = '';
+        {% if current_user.is_authenticated %}
+            userInitial = '{{ current_user.username[0]|upper }}';
+        {% endif %}
+
+        function updateAvatarDisplay(colorOrImage, isImage) {
+            const avatars = document.querySelectorAll('.avatar-circle');
+            avatars.forEach(av => {
+                if (isImage) {
+                    av.style.background = 'white';
+                    av.innerHTML = `<img src="${colorOrImage}" alt="avatar">`;
+                } else {
+                    av.style.background = colorOrImage;
+                    av.innerHTML = userInitial; 
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const body = document.body;
+            
+            // --- ЗАГРУЗКА ФОНА ---
+            const savedBg = localStorage.getItem('eduShareBg');
+            const savedBgType = localStorage.getItem('eduShareBgType');
+            if (savedBg) {
+                if (savedBgType === 'image') {
+                    body.style.background = `url(${savedBg}) no-repeat center center fixed`;
+                    body.style.backgroundSize = 'cover';
+                    body.style.animation = 'none';
+                } else {
+                    body.style.background = savedBg;
+                    body.style.backgroundSize = '400% 400%';
+                    body.style.animation = 'gradientBG 15s ease infinite';
+                }
+            }
+
+            // Генерация кнопок фона
+            const gradientContainer = document.getElementById('gradient-options');
+            gradients.forEach((grad, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'color-option';
+                btn.style.background = grad;
+                btn.onclick = () => {
+                    body.style.background = grad;
+                    body.style.backgroundSize = '400% 400%';
+                    body.style.animation = 'gradientBG 15s ease infinite';
+                    localStorage.setItem('eduShareBg', grad);
+                    localStorage.setItem('eduShareBgType', 'gradient');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('bgSettingsModal'));
+                    if(modal) modal.hide();
+                };
+                gradientContainer.appendChild(btn);
+            });
+
+            // --- ЗАГРУЗКА АВАТАРКИ ---
+            const savedAv = localStorage.getItem('eduShareAvatar');
+            const savedAvType = localStorage.getItem('eduShareAvatarType');
+            
+            // Применяем сохраненную аватарку только если есть инициалы (пользователь вошел)
+            if (savedAv && userInitial !== '') {
+                updateAvatarDisplay(savedAv, savedAvType === 'image');
+            } else if (userInitial !== '') {
+                // Если сохраненной нет, ставим дефолтную
+                updateAvatarDisplay('linear-gradient(135deg, #6366f1, #ec4899)', false);
+            }
+
+            // Генерация кнопок аватарок (только если пользователь вошел)
+            if (userInitial !== '') {
+                const avContainer = document.getElementById('avatar-color-options');
+                avatarColors.forEach((col, index) => {
+                    const btn = document.createElement('div');
+                    btn.className = 'avatar-option';
+                    btn.style.background = col;
+                    btn.innerHTML = userInitial;
+                    btn.onclick = () => {
+                        updateAvatarDisplay(col, false);
+                        localStorage.setItem('eduShareAvatar', col);
+                        localStorage.setItem('eduShareAvatarType', 'color');
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('avatarSettingsModal'));
+                        if(modal) modal.hide();
+                    };
+                    avContainer.appendChild(btn);
+                });
+            }
+
+            // Анимация карточек
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                if(!card.classList.contains('fade-in-up')) {
+                    card.classList.add('fade-in-up');
+                    card.style.animationDelay = `${index * 0.1}s`;
+                }
+            });
+            
+            // Цитата
+            const quoteBox = document.getElementById('daily-quote');
+            if(quoteBox) {
+                fetch('/api/quote').then(r => r.json()).then(data => {
+                    quoteBox.innerHTML = `
+                        <div class="quote-card p-4 rounded-4 shadow-sm h-100 text-center">
+                            <i class="bi bi-quote fs-1 text-primary opacity-25 d-block mb-2"></i>
+                            <p class="fs-6 fst-italic mb-3 text-dark fw-medium">"${data.text}"</p>
+                            <footer class="blockquote-footer text-primary fw-bold m-0">${data.author}</footer>
+                        </div>`;
+                });
+            }
+        });
+
+        // === ФУНКЦИИ ФОНА ===
+        function applyCustomBg() {
+            const input = document.getElementById('custom-bg-input');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgUrl = e.target.result;
+                    document.body.style.background = `url(${imgUrl}) no-repeat center center fixed`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.animation = 'none';
+                    try {
+                        localStorage.setItem('eduShareBg', imgUrl);
+                        localStorage.setItem('eduShareBgType', 'image');
+                        bootstrap.Modal.getInstance(document.getElementById('bgSettingsModal')).hide();
+                    } catch (err) { alert('Картинка слишком большая!'); }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function resetBg() {
+            const defaultGrad = 'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab)';
+            document.body.style.background = defaultGrad;
+            document.body.style.backgroundSize = '400% 400%';
+            document.body.style.animation = 'gradientBG 15s ease infinite';
+            localStorage.setItem('eduShareBg', defaultGrad);
+            localStorage.setItem('eduShareBgType', 'gradient');
+            bootstrap.Modal.getInstance(document.getElementById('bgSettingsModal')).hide();
+        }
+
+        // === ФУНКЦИИ АВАТАРКИ ===
+        function applyCustomAvatar() {
+            const input = document.getElementById('custom-avatar-input');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgUrl = e.target.result;
+                    updateAvatarDisplay(imgUrl, true);
+                    try {
+                        localStorage.setItem('eduShareAvatar', imgUrl);
+                        localStorage.setItem('eduShareAvatarType', 'image');
+                        bootstrap.Modal.getInstance(document.getElementById('avatarSettingsModal')).hide();
+                    } catch (err) { alert('Фото слишком большое! Попробуйте картинку до 1MB.'); }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function resetAvatar() {
+            const defaultColor = 'linear-gradient(135deg, #6366f1, #ec4899)';
+            updateAvatarDisplay(defaultColor, false);
+            localStorage.setItem('eduShareAvatar', defaultColor);
+            localStorage.setItem('eduShareAvatarType', 'color');
+            bootstrap.Modal.getInstance(document.getElementById('avatarSettingsModal')).hide();
+        }
+    </script>
+</body>
+</html>
